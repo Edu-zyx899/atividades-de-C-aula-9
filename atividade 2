@@ -1,0 +1,56 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+    int id;
+    char cargo[30];
+    float salario;
+} Funcionario;
+
+int main() {
+
+    if (funcionario == NULL) {
+        printf("Erro ao alocar memoria!\n");
+        return 1;
+    }
+    funcionario->id = 101;
+    strcpy(funcionario->cargo, "Analista de RH");
+    funcionario->salario = 4500.00;
+
+    if (backup == NULL) {
+        printf("Erro ao alocar memoria para o backup!\n");
+        free(funcionario);
+        return 1;
+    }
+
+    if (arquivo == NULL) {
+        printf("Erro ao criar o arquivo!\n");
+        free(funcionario);
+        free(backup);
+        return 1;
+    }
+
+    fwrite(backup, sizeof(Funcionario), 1, arquivo);
+
+    fclose(arquivo);
+
+    printf("Backup realizado com sucesso!\n");
+    printf("ID: %d\n", backup->id);
+    printf("Cargo: %s\n", backup->cargo);
+    printf("Salario: R$ %.2f\n", backup->salario);
+    free(funcionario);
+    free(backup);
+
+    return 0;
+}
+
+//malloc(): reserva espaço na memória para armazenar o funcionário original.
+//Preenchimento dos dados: utiliza -> para acessar os campos da struct através do ponteiro.
+//Segundo malloc(): cria um segundo espaço de memória, chamado buffer de backup.
+//memcpy(): copia todos os bytes da struct original para o buffer de backup.
+//fopen(): cria o arquivo backup_rh.bin no modo binário de escrita (wb).
+//fwrite(): grava o conteúdo do buffer de backup no arquivo.
+//fclose(): fecha o arquivo.
+//free(): libera a memória dinâmica utilizada.
