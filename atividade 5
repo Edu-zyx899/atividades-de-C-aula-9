@@ -1,0 +1,169 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+    char titulo[12];
+    int zona;
+} Eleitor;
+
+typedef struct {
+    Eleitor eleitor;
+    int numero_voto;
+} Cedula;
+
+Cedula* adicionarVoto(Cedula *lista, int *quantidade, Cedula novoVoto) {
+
+    Cedula *temp = realloc(lista, (*quantidade + 1) * sizeof(Cedula));
+
+    if (temp == NULL) {
+        printf("Erro ao alocar memoria!\n");
+        return lista;
+    }
+
+    lista = temp;
+    lista[*quantidade] = novoVoto;
+
+    (*quantidade)++;
+
+    return lista;
+}
+
+void salvarArquivo(Cedula *lista, int quantidade) {
+
+    FILE *arquivo = fopen("urnas.bin", "wb");
+
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo!\n");
+        return;
+    }
+
+    fwrite(lista, sizeof(Cedula), quantidade, arquivo);
+
+    fclose(arquivo);
+
+    printf("Votos salvos com sucesso!\n");
+}
+
+Cedula* recuperarArquivo(int *quantidade) {
+
+    FILE *arquivo = fopen("urnas.bin", "rb");
+
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo!\n");
+        *quantidade = 0;
+        return NULL;
+    }
+
+    fseek(arquivo, 0, SEEK_END);
+
+    long tamanho = ftell(arquivo);
+
+    *quantidade = tamanho / sizeof(Cedula);
+
+    rewind(arquivo);
+
+    Cedula *lista = malloc(tamanho);
+
+    if (lista == NULL && tamanho > 0) {
+        printf("Erro ao alocar memoria!\n");
+        fclose(arquivo);
+        *quantidade = 0;
+        return NULL;
+    }
+
+    if (tamanho > 0) {
+        size_t lidos = fread(lista, sizeof(Cedula), *quantidade, arquivo);
+
+        if (lidos != (size_t)*quantidade) {
+            printf("Erro na leitura do arquivo!\n");
+            free(lista);
+            fclose(arquivo);
+            *quantidade = 0;
+            return NULL;
+        }
+    }
+
+    fclose(arquivo);
+
+    return lista;
+}
+
+int main() {
+
+    Cedula *lista = NULL;
+    int quantidade = 0;
+
+    Cedula novoVoto;
+
+    int opcao;
+
+    do {
+        printf("\n1 - Adicionar voto");
+        printf("\n2 - Salvar votos");
+        printf("\n3 - Recuperar votos");
+        printf("\n0 - Sair");
+        printf("\nEscolha: ");
+        scanf("%d", &opcao);
+
+        switch (opcao) {
+
+            case 1:
+
+                printf("Titulo de eleitor: ");
+                scanf("%11s", novoVoto.eleitor.titulo);
+
+                printf("Zona eleitoral: ");
+                scanf("%d", &novoVoto.eleitor.zona);
+
+                printf("Numero do voto: ");
+                scanf("%d", &novoVoto.numero_voto);
+
+                lista = adicionarVoto(lista, &quantidade, novoVoto);
+
+                break;
+
+            case 2:
+
+                salvarArquivo(lista, quantidade);
+
+                break;
+
+            case 3:
+
+                free(lista);
+
+                lista = recuperarArquivo(&quantidade);
+
+                printf("\nVotos recuperados: %d\n", quantidade);
+
+                for (int i = 0; i < quantidade; i++) {
+                    printf("\nTitulo: %s", lista[i].eleitor.titulo);
+                    printf("\nZona: %d", lista[i].eleitor.zona);
+                    printf("\nNumero do voto: %d\n", lista[i].numero_voto);
+                }
+
+                break;
+
+            case 0:
+                printf("Encerrando programa...\n");
+                break;
+
+            default:
+                printf("Opcao invalida!\n");
+        }
+
+    } while (opcao != 0);
+
+    free(lista);
+
+    return 0;
+}
+
+//fseek posiciona o cursor no final do arquivo.
+//ftell descobre quantos bytes o arquivo possui.
+//Divide-se o tamanho pelo tamanho de uma Cedula para descobrir quantos votos existem.
+//rewind retorna ao início do arquivo.
+//malloc aloca exatamente o espaço necessário.
+//fread lê todos os registros diretamente para a memória alocada.
