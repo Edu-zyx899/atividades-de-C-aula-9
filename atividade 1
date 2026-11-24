@@ -1,0 +1,76 @@
+
+#include <stdio.h>
+
+struct Produto {
+    int codigo;
+    char nome[50];
+    float preco;
+};
+
+int main() {
+    struct Produto produtos[3];
+    FILE *arquivo;
+    int i;
+
+    for (i = 0; i < 3; i++) {
+        printf("\nProduto %d\n", i + 1);
+
+        printf("Codigo: ");
+        scanf("%d", &produtos[i].codigo);
+
+        printf("Nome: ");
+        scanf(" %[^\n]", produtos[i].nome);
+
+        printf("Preco: ");
+        scanf("%f", &produtos[i].preco);
+    }
+
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo!\n");
+        return 1;
+    }
+
+    for (i = 0; i < 3; i++) {
+        fprintf(arquivo, "%d %s %.2f\n",
+                produtos[i].codigo,
+                produtos[i].nome,
+                produtos[i].preco);
+    }
+
+    fclose(arquivo);
+
+    if (arquivo == NULL) {
+        printf("Erro ao ler o arquivo!\n");
+        return 1;
+    }
+
+    printf("\n ESTOQUE DA LOJA \n");
+    printf("%-10s %-15s %10s\n", "CODIGO", "NOME", "PRECO");
+
+    struct Produto leitura;
+
+    while (fscanf(arquivo, "%d %49s %f",
+                  &leitura.codigo,
+                  leitura.nome,
+                  &leitura.preco) == 3) {
+
+        printf("%-10d %-15s R$ %8.2f\n",
+               leitura.codigo,
+               leitura.nome,
+               leitura.preco);
+    }
+
+    printf("-fechando-\n");
+    fclose(arquivo);
+
+    return 0;
+}
+
+//Criação da struct: define os três atributos de cada produto: código, nome e preço.
+//Criação do vetor: produtos[3] armazena os dados dos três produtos.
+//Entrada de dados: um laço for solicita ao usuário as informações pelo teclado.
+//Gravação no arquivo: fopen("estoque.txt", "w") cria ou abre o arquivo para escrita, e fprintf() grava um produto por linha.
+//Fechamento: fclose() fecha o arquivo após a gravação.
+//Leitura: o arquivo é aberto novamente com "r" e os dados são recuperados usando fscanf().
+//Exibição: printf() apresenta os produtos organizados em colunas.
+//Finalização: o arquivo é fechado novamente.
