@@ -1,0 +1,80 @@
+
+#include <stdio.h>
+
+typedef struct {
+    int conta_corrente;
+    char nome[50];
+    float saldo;
+} Cliente;
+
+int main() {
+    FILE *arquivo;
+    Cliente cliente;
+    int conta, encontrado = 0;
+    float valor;
+    char operacao;
+
+    printf("Digite o numero da conta corrente: ");
+    scanf("%d", &conta);
+
+    printf("Digite D para deposito ou S para saque: ");
+    scanf(" %c", &operacao);
+
+    printf("Digite o valor: ");
+    scanf("%f", &valor);
+
+    arquivo = fopen("clientes.bin", "rb+");
+
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo!\n");
+        return 1;
+    }
+
+    while (fread(&cliente, sizeof(Cliente), 1, arquivo) == 1) {
+
+        if (cliente.conta_corrente == conta) {
+
+            if (operacao == 'D' || operacao == 'd') {
+                cliente.saldo += valor;
+            }
+            else if (operacao == 'S' || operacao == 's') {
+                if (valor > cliente.saldo) {
+                    printf("Saldo insuficiente!\n");
+                    fclose(arquivo);
+                    return 1;
+                }
+
+                cliente.saldo -= valor;
+            }
+            else {
+                printf("Operacao invalida!\n");
+                fclose(arquivo);
+                return 1;
+            }
+
+            fseek(arquivo, -((long)sizeof(Cliente)), SEEK_CUR);
+
+            fwrite(&cliente, sizeof(Cliente), 1, arquivo);
+
+            encontrado = 1;
+
+            printf("Saldo atualizado com sucesso!\n");
+            printf("Novo saldo: R$ %.2f\n", cliente.saldo);
+
+            break;
+        }
+    }
+
+    if (!encontrado) {
+        printf("Conta corrente nao encontrada!\n");
+    }
+
+    fclose(arquivo);
+
+    return 0;
+}
+
+
+//sizeof(Cliente): calcula o tamanho de um registro.
+//-sizeof(Cliente): volta exatamente o tamanho de um registro.
+//SEEK_CUR: utiliza a posição atual do ponteiro como referência.
